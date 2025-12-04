@@ -1,4 +1,5 @@
-namespace CasinoRoyale.Models
+﻿namespace CasinoRoyale.Models
+
 {
     public class ErrorViewModel
     {
