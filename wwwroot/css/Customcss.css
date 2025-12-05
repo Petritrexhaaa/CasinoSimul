@@ -4,7 +4,7 @@ body, html {
     height: 100%;
     margin: 0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('/images/numbers.webp') no-repeat center center fixed;
+    background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('/images/pay-2662758_1920.jpg') no-repeat center center fixed;
     background-size: cover;
     color: #eee;
 }
