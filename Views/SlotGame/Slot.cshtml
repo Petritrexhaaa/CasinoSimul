@@ -1,0 +1,143 @@
+@{
+    ViewData["Title"] = "Slot Machine";
+}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+<div class="container mt-5 text-center slot-machine">
+    @Html.AntiForgeryToken()
+
+    <h2 class="mb-4">🎰 SlotRush 3x3</h2>
+
+    <div id="reels" class="d-flex justify-content-center mb-3" style="font-size: 60px;">
+        <div>
+            <div><span id="r1c1">🍒</span> <span id="r1c2">🍋</span> <span id="r1c3">🍇</span></div>
+            <div><span id="r2c1">🍒</span> <span id="r2c2">🍋</span> <span id="r2c3">🍇</span></div>
+            <div><span id="r3c1">🍒</span> <span id="r3c2">🍋</span> <span id="r3c3">🍇</span></div>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <button class="btn btn-outline-primary me-2 bet-btn" data-bet="10">Bet 10</button>
+        <button class="btn btn-outline-primary me-2 bet-btn" data-bet="20">Bet 20</button>
+        <button class="btn btn-outline-primary me-2 bet-btn" data-bet="50">Bet 50</button>
+        <input type="number" min="1" placeholder="Custom" id="customBet" class="form-control d-inline-block" style="width: 100px;" />
+    </div>
+
+    <button class="btn btn-success" id="spinBtn">Spin</button>
+
+    <div class="mt-3" id="result" style="font-size: 1.2rem;"></div>
+</div>
+
+<script>
+    const reelStrips = Array(30).fill('🍒')    // most common
+        .concat(Array(20).fill('🍋'))
+        .concat(Array(10).fill('🍇'))
+        .concat(Array(5).fill('🔔'))
+        .concat(Array(1).fill('💎'));
+
+    const payTable = {
+        '🍒': { 3: 1 },
+        '🍋': { 3: 2 },
+        '🍇': { 3: 3 },
+        '🔔': { 3: 8 },
+        '💎': { 3: 30 }
+    };
+
+    const paylines = [
+        [0, 1, 2], // top row
+        [3, 4, 5], // middle row
+        [6, 7, 8], // bottom row
+        [0, 4, 8], // diagonal
+        [2, 4, 6]  // opposite diagonal
+    ];
+
+    let currentBet = 10;
+    let currentBalance = 0;
+    const balanceDisplay = document.createElement('div');
+    document.querySelector('.slot-machine').prepend(balanceDisplay);
+
+    async function loadBalance() {
+        const res = await fetch('/SlotGame/GetBalance');
+        if (res.ok) {
+            currentBalance = (await res.json()).balance;
+        }
+        updateBalanceDisplay();
+    }
+
+    function updateBalanceDisplay() {
+        const formatted = currentBalance.toLocaleString('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            maximumFractionDigits: 2
+        });
+        balanceDisplay.innerText = `Balance: ${formatted}`;
+        const liveBalance = document.getElementById("liveBalance");
+        if (liveBalance) {
+            liveBalance.innerText = formatted;
+        }
+    }
+
+    function spinReels() {
+        return Array.from({ length: 9 }, () =>
+            reelStrips[Math.floor(Math.random() * reelStrips.length)]
+        );
+    }
+
+    document.querySelectorAll('.bet-btn').forEach(btn =>
+        btn.addEventListener('click', () => currentBet = +btn.dataset.bet)
+    );
+
+    document.getElementById('customBet').addEventListener('input', e => {
+        const v = +e.target.value;
+        if (v > 0) currentBet = v;
+    });
+
+    document.getElementById('spinBtn').addEventListener('click', async () => {
+        const resultDiv = document.getElementById('result');
+        if (currentBet > currentBalance) return alert('Insufficient balance');
+        resultDiv.innerText = 'Spinning...';
+
+        const reels = spinReels();
+        reels.forEach((s, i) => {
+            document.getElementById(`r${Math.floor(i / 3) + 1}c${i % 3 + 1}`).innerText = s;
+        });
+
+        let totalWin = 0;
+        paylines.forEach(line => {
+            const symbols = line.map(i => reels[i]);
+            const first = symbols[0];
+            const allSame = symbols.every(s => s === first);
+            if (allSame && payTable[first] && payTable[first][3]) {
+                totalWin += currentBet * payTable[first][3];
+            }
+        });
+
+        await updateBalance(-currentBet);
+        if (totalWin > 0) await updateBalance(totalWin);
+
+        resultDiv.innerText = `You bet ${currentBet}. ${totalWin > 0 ? '🎉 You won ' + totalWin : '❌ You lost ' + currentBet}.`;
+    });
+
+    async function updateBalance(amount) {
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+        const res = await fetch('/SlotGame/UpdateBalance', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': token
+            },
+            body: JSON.stringify({ amount })
+        });
+
+        if (!res.ok) {
+            alert(`Error updating balance: ${await res.text()}`);
+            throw new Error('Balance update failed');
+        }
+
+        currentBalance = (await res.json()).balance;
+        updateBalanceDisplay();
+    }
+
+    loadBalance();
+</script>
+

@@ -1,0 +1,225 @@
+@{
+    ViewData["Title"] = "Lucky Roll";
+}
+
+<div class="container text-center mt-5">
+    <h2>🎲 Lucky Roll</h2>
+    <p>Pick your prediction and bet amount. Roll two dice. If your guess is right, you win!</p>
+
+    <div class="mt-3">
+        <select id="prediction" class="form-select w-50 mx-auto">
+            <option value="Under">Under 7</option>
+            <option value="Seven">Exactly 7</option>
+            <option value="Over">Over 7</option>
+        </select>
+
+        <input type="number" class="form-control w-50 mx-auto mt-2" id="betAmount" placeholder="Enter bet amount" min="1" />
+
+        <div class="dice-container mt-4 d-flex justify-content-center gap-4">
+            <div id="dice1" class="dice"></div>
+            <div id="dice2" class="dice"></div>
+        </div>
+
+        <button onclick="rollDice()" class="btn btn-success mt-3">Roll Dice</button>
+    </div>
+
+    <div id="result" class="mt-4"></div>
+</div>
+
+
+
+@section Scripts {
+    <!-- Three.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
+    <script>
+        // Dice face to rotation mapping (approximate) for showing correct face up
+        // Faces numbering: 1-6, each maps to rotation [x, y, z] in radians
+        const faceRotations = {
+            2: { x: -Math.PI / 2, y: 0, z: 0 },   // Face 2 up
+            3: { x: 0, y: 0, z: Math.PI / 2 },    // Face 3 up
+            4: { x: 0, y: 0, z: -Math.PI / 2 },   // Face 4 up
+            5: { x: Math.PI / 2, y: 0, z: 0 },    // Face 5 up
+            6: { x: Math.PI, y: 0, z: 0 }          // Face 6 up
+        };
+
+        // Create a dice 3D object with white cube and black dots (simplified)
+        function createDice(containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = "";
+
+            const size = 100;
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 1000);
+            camera.position.z = 3;
+
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(size, size);
+            container.appendChild(renderer.domElement);
+
+            // Light setup
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(3, 5, 4);
+            scene.add(directionalLight);
+
+            // Dice cube with white material (white base, no transparency)
+            const geometry = new THREE.BoxGeometry(1, 1, 1);
+
+            // Create a canvas texture for each face with black dots for dice dots
+            function createFaceTexture(number) {
+                const canvas = document.createElement('canvas');
+                canvas.width = 128;
+                canvas.height = 128;
+                const ctx = canvas.getContext('2d');
+
+                // Fill background with white to make dots visible
+                ctx.fillStyle = '#222222';
+                ctx.fillRect(0, 0, 128, 128);
+
+                // Draw black dots with shadow for some 3D effect
+                ctx.fillStyle = '#000000';
+                ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                ctx.shadowBlur = 4;
+                ctx.shadowOffsetX = 1;
+                ctx.shadowOffsetY = 1;
+
+                const radius = 12;
+                const positions = {
+                    1: [[64, 64]],
+                    2: [[32, 32], [96, 96]],
+                    3: [[32, 32], [64, 64], [96, 96]],
+                    4: [[32, 32], [96, 32], [32, 96], [96, 96]],
+                    5: [[32, 32], [96, 32], [64, 64], [32, 96], [96, 96]],
+                    6: [[32, 28], [32, 64], [32, 100], [96, 28], [96, 64], [96, 100]],
+                };
+
+                positions[number].forEach(pos => {
+                    ctx.beginPath();
+                    ctx.arc(pos[0], pos[1], radius, 0, 2 * Math.PI);
+                    ctx.fill();
+                });
+
+                return new THREE.CanvasTexture(canvas);
+            }
+
+            // Assign materials with dice face textures for each cube face
+            // BoxGeometry face order: right, left, top, bottom, front, back
+            // Map faces so opposite sides add up to 7
+            const materials = [
+                new THREE.MeshStandardMaterial({ map: createFaceTexture(3), color: 0xffffff }), // right
+                new THREE.MeshStandardMaterial({ map: createFaceTexture(4), color: 0xffffff }), // left
+                new THREE.MeshStandardMaterial({ map: createFaceTexture(5), color: 0xffffff }), // top
+                new THREE.MeshStandardMaterial({ map: createFaceTexture(2), color: 0xffffff }), // bottom
+                new THREE.MeshStandardMaterial({ map: createFaceTexture(2), color: 0xffffff }), // front
+
+                new THREE.MeshStandardMaterial({ map: createFaceTexture(6), color: 0xffffff }), // back
+            ];
+
+            const dice = new THREE.Mesh(geometry, materials);
+            scene.add(dice);
+
+            // Render loop
+            function animate() {
+                requestAnimationFrame(animate);
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            return { dice, scene, camera, renderer };
+        }
+
+        const diceOne = createDice("dice1");
+        const diceTwo = createDice("dice2");
+
+        // Animate dice roll with random spins, then rotate to final face
+        function rollDiceAnimation(dieObj, finalFace, duration = 2000) {
+            return new Promise(resolve => {
+                const dice = dieObj.dice;
+                const start = performance.now();
+
+                function animateRoll(time) {
+                    let elapsed = time - start;
+
+                    if (elapsed < duration) {
+                        // Spin fast initially then slow down
+                        const progress = elapsed / duration;
+                        const spinAmount = (1 - progress) * 10;
+
+                        dice.rotation.x += spinAmount;
+                        dice.rotation.y += spinAmount * 1.1;
+                        dice.rotation.z += spinAmount * 0.9;
+
+                        dieObj.renderer.render(dieObj.scene, dieObj.camera);
+                        requestAnimationFrame(animateRoll);
+                    } else {
+                        // Snap to final face rotation
+                        const rot = faceRotations[finalFace];
+                        dice.rotation.x = rot.x;
+                        dice.rotation.y = rot.y;
+                        dice.rotation.z = rot.z;
+
+                        dieObj.renderer.render(dieObj.scene, dieObj.camera);
+                        resolve();
+                    }
+                }
+
+                animateRoll(performance.now());
+            });
+        }
+
+        async function rollDice() {
+            const prediction = document.getElementById("prediction").value;
+            const betAmount = parseFloat(document.getElementById("betAmount").value);
+            const resultDiv = document.getElementById("result");
+
+            if (!betAmount || betAmount < 1) {
+                alert("Please enter a valid bet amount.");
+                return;
+            }
+
+            // Clear previous results
+            resultDiv.innerHTML = "";
+
+            try {
+                // Call backend first to get dice result so we can animate correctly
+                const response = await fetch("/SlotGame/PlayLuckyRoll", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ prediction, betAmount })
+                });
+
+                const data = await response.json();
+
+                if (data.die1 !== undefined && data.die2 !== undefined) {
+                    // Animate dice rolling to results
+                    await Promise.all([
+                        rollDiceAnimation(diceOne, data.die1),
+                        rollDiceAnimation(diceTwo, data.die2),
+                    ]);
+
+                    // Show results with pop effect
+                    resultDiv.innerHTML = `
+                        <p>You rolled: <strong>${data.die1}</strong> + <strong>${data.die2}</strong> = <strong>${data.total}</strong></p>
+                        <h4 class="text-${data.win ? "success" : "danger"} pop">You ${data.win ? "won" : "lost"}!</h4>
+                        <p>New Balance: <strong>${data.balance.toFixed(2)}</strong></p>
+                    `;
+
+                    // 🔥 Update the top-right live balance in the layout
+                    document.getElementById("liveBalance").textContent = `$${data.balance.toFixed(2)}`;
+                } else {
+                    resultDiv.innerHTML = `<div class="text-danger">Error: Invalid dice data</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="text-danger">Error: Could not reach server.</div>`;
+            }
+        }
+    </script>
+
+
+
+
+
+
+
+}

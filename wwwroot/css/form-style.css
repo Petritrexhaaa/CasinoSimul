@@ -1,0 +1,86 @@
+/* Glass effect base */
+.bg-glass {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* Transparent label backgrounds so floating labels work well */
+.bg-trans {
+    background-color: transparent;
+}
+
+/* Form wrapper for consistency */
+.register-form, .login-form {
+    max-width: 420px;
+    margin: 100px auto;
+    padding: 2.5rem 2rem;
+    border-radius: 20px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    color: #eee;
+}
+
+/* Floating label form inputs */
+.form-floating > .form-control {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #eee;
+}
+
+    .form-floating > .form-control:focus {
+        border-color: #ffd700;
+        box-shadow: 0 0 8px #ffd70088;
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #fff;
+    }
+
+.form-floating > label {
+    color: #ccc;
+}
+
+.form-control::placeholder {
+    color: #aaa;
+}
+
+/* Submit buttons */
+.btn-primary {
+    background-color: #ffd700;
+    color: #422c00;
+    font-weight: 700;
+    border: none;
+    border-radius: 30px;
+    box-shadow: 0 0 10px #ffd70099;
+    transition: 0.3s ease;
+}
+
+    .btn-primary:hover {
+        background-color: #ffdb4d;
+        box-shadow: 0 0 16px #ffdb4d;
+    }
+
+/* Checkbox styling */
+.form-check-input {
+    background-color: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.form-check-label {
+    color: #ddd;
+}
+
+/* Validation messages */
+.text-danger {
+    color: #ff4d4d !important;
+    font-size: 0.875rem;
+}
+
+/* Small links and helper text */
+small, .text-center a {
+    color: #ccc;
+}
+
+    .text-center a:hover {
+        color: #fff;
+        text-decoration: underline;
+    }

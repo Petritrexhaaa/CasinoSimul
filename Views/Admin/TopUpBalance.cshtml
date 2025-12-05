@@ -1,0 +1,36 @@
+@{
+    ViewData["Title"] = "Top Up Balance";
+}
+
+<h2>Top Up User Balance</h2>
+
+@if (ViewBag.Message != null)
+{
+    <div class="alert alert-success">@ViewBag.Message</div>
+}
+
+<form asp-action="TopUpBalance" method="post" class="mt-4">
+    @Html.AntiForgeryToken()
+
+    <div class="mb-3">
+        <label for="userIdentifier" class="form-label">Username or Email</label>
+        <input type="text" name="userIdentifier" id="userIdentifier" class="form-control" required />
+    </div>
+
+    <div class="mb-3">
+        <label for="amount" class="form-label">Amount</label>
+        <input type="number" name="amount" id="amount" class="form-control" min="1" required />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Top Up</button>
+</form>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger mt-3">
+        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+        {
+            <div>@error.ErrorMessage</div>
+        }
+    </div>
+}

@@ -4,47 +4,109 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - CasinoRoyale</title>
-    <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Customcss.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/CasinoRoyale.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/form-style.css" />
+    <link rel="stylesheet" href="~/css/Card.css" />
+    <link rel="stylesheet" href="~/css/Slot.css" />
+    <link rel="stylesheet" href="~/css/Dice.css" />
 </head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">CasinoRoyale</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+<body class="bg-dark text-light" style="min-height: 100vh;">
+
+    <!-- Back Button -->
+    @{
+        var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+        var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+        var hideBackButton = currentController == "Home" && currentAction == "GameHub";
+    }
+
+    @if (!hideBackButton)
+    {
+        <button onclick="history.back()" class="btn btn-outline-light position-absolute top-0 start-0 m-3 z-3">
+            <i class="bi bi-arrow-left"></i> Back
+        </button>
+    }
+
+    <!-- Profile Dropdown Top-Right -->
+    <div class="dropdown position-absolute top-0 end-0 m-3 z-3">
+        <button class="btn btn-dark dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <span class="me-2">👤</span>
+            <span id="liveBalance" class="text-success fw-bold">@String.Format("{0:C0}", ViewBag.Balance ?? 0)</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+            <li>
+                <a class="dropdown-item" href="@Url.Action("GameHub", "Home")">🏠 Home</a>
+            </li>
+            <li>
+                <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#depositModal">💳 Deposit</a>
+            </li>
+            @if (User.IsInRole("Admin"))
+            {
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                    <a class="dropdown-item text-warning" href="@Url.Action("TopUpBalance", "Admin")">
+                        💰 Admin: Top-Up Balance
+                    </a>
+                </li>
+            }
+            <li>
+                <a class="dropdown-item text-danger" href="@Url.Action("Logout", "Account")">🚪 Logout</a>
+            </li>
+        </ul>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - CasinoRoyale - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <!-- Main Page Content -->
+    <main role="main" style="padding-top: 80px;">
+        @RenderBody()
+    </main>
+
+    <!-- Deposit Modal -->
+    <div class="modal fade" id="depositModal" tabindex="-1" aria-labelledby="depositModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-dark">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="depositModalLabel">Deposit Funds</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="depositForm">
+                        <div class="mb-3">
+                            <label for="depositAmount" class="form-label">Amount</label>
+                            <input type="number" class="form-control" id="depositAmount" name="Amount" min="1" required />
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Deposit</button>
+                    </form>
+                    <div id="depositStatus" class="mt-2 text-center"></div>
+                </div>
+            </div>
         </div>
-    </footer>
+    </div>
+
+    <!-- Scripts -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+        $('#depositForm').on('submit', function (e) {
+            e.preventDefault();
+            const amount = $('#depositAmount').val();
+            $.ajax({
+                type: 'POST',
+                url: '/Account/Deposit',
+                data: { Amount: amount },
+                success: function (data) {
+                    $('#depositStatus').html(`<span class="text-success">Deposited $${amount}</span>`);
+                    $('#liveBalance').text(data.newBalanceFormatted);
+                },
+                error: function () {
+                    $('#depositStatus').html(`<span class="text-danger">Something went wrong.</span>`);
+                }
+            });
+        });
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
