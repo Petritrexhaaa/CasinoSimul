@@ -1,0 +1,34 @@
+@model CasinoRoyale.ViewModels.LoginVM
+
+<form asp-action="Login" method="post" class="p-4 rounded shadow bg-glass" style="max-width: 400px; margin:auto;">
+    <div asp-validation-summary="All" class="text-danger small mb-3"></div>
+
+    <div class="text-center mb-3">
+        <!-- Logo image removed because it's missing -->
+        <h1 class="h4 mb-3 fw-bold">Sign in to CasinoRoyale</h1>
+    </div>
+
+    <div class="form-floating mb-3">
+        <input type="text" asp-for="Username" class="form-control bg-glass" id="floatingUsername" placeholder="Username" required />
+        <label for="floatingUsername" class="bg-trans fw-bold">Username</label>
+        <span class="text-danger" asp-validation-for="Username"></span>
+    </div>
+
+    <div class="form-floating mb-3">
+        <input type="password" asp-for="Password" class="form-control bg-glass" id="floatingPassword" placeholder="Password" required />
+        <label for="floatingPassword" class="bg-trans fw-bold">Password</label>
+        <span class="text-danger" asp-validation-for="Password"></span>
+    </div>
+
+    <div class="form-check mb-3">
+        <input class="form-check-input" asp-for="RememberMe" type="checkbox" id="rememberMe" />
+        <label class="form-check-label fw-bold" for="rememberMe">Remember me</label>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100 py-2">Sign in</button>
+
+    <div class="text-center mt-3">
+        <small>Don't have an account? <a asp-controller="Account" asp-action="Register">Register here</a></small>
+    </div>
+
+</form>

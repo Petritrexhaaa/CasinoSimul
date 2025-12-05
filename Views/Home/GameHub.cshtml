@@ -1,0 +1,94 @@
+@{
+    ViewData["Title"] = "Game Hub";
+}
+
+
+
+<div class="container">
+    <h1 class="text-center mb-4">🎮 Game Hub</h1>
+
+    <div class="games-grid">
+        <div class="game-card slot-pulse" onclick="location.href='@Url.Action("Slot", "SlotGame")'" title="Classic 3x3 Slot Machine">
+            <div class="game-icon">🎰</div>
+            <div class="game-title">Slots</div>
+            <div class="game-desc">Try your luck on the classic 3x3 slot machine with big payouts.</div>
+        </div>
+
+        <!-- High Card (Poker style) Game -->
+        <div class="game-card slot-pulse" onclick="location.href='@Url.Action("Card", "SlotGame")'" title="High Card - Beat the Dealer">
+            <div class="game-icon">🃏</div>
+            <div class="game-title">High Card</div>
+            <div class="game-desc">Draw a card and beat the dealer to win!</div>
+        </div>
+
+        <!-- Lucky Roll Dice Game -->
+        <div class="game-card slot-pulse" onclick="location.href='@Url.Action("Dice", "SlotGame")'" title="Lucky Roll - Dice Game">
+            <div class="game-icon">🎲</div>
+            <div class="game-title">Lucky Roll</div>
+            <div class="game-desc">Roll two dice and win based on your prediction.</div>
+        </div>
+
+    </div>
+</div>
+
+<!-- 💳 Deposit Modal -->
+<div class="modal fade" id="depositModal" tabindex="-1" aria-labelledby="depositModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-light">
+            <div class="modal-header">
+                <h5 class="modal-title" id="depositModalLabel">Deposit Funds</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex gap-2 mb-3">
+                    <button class="btn btn-outline-light" onclick="setDepositAmount(10)">$10</button>
+                    <button class="btn btn-outline-light" onclick="setDepositAmount(20)">$20</button>
+                    <button class="btn btn-outline-light" onclick="setDepositAmount(50)">$50</button>
+                </div>
+                <div class="form-floating">
+                    <input type="number" class="form-control bg-secondary text-light" id="customAmount" placeholder="Amount">
+                    <label for="customAmount">Custom Amount</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-success" onclick="confirmDeposit()">Confirm Deposit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 💻 JS Logic -->
+@section Scripts {
+    <script>
+        function setDepositAmount(amount) {
+            document.getElementById('customAmount').value = amount;
+        }
+
+        function confirmDeposit() {
+            const amount = parseFloat(document.getElementById('customAmount').value);
+            if (isNaN(amount) || amount <= 0) {
+                alert("Enter a valid amount.");
+                return;
+            }
+
+            // Simulate deposit (for mock)
+            alert(`$${amount} deposited successfully!`);
+
+            const modal = bootstrap.Modal.getInstance(document.getElementById('depositModal'));
+            modal.hide();
+
+            const balanceElem = document.getElementById('liveBalance');
+            const current = parseFloat(balanceElem.innerText.replace(/[^0-9.-]/g, '')) || 0;
+            const newBalance = current + amount;
+
+            // Update both local balance and top-right header
+            const formatted = newBalance.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 });
+            balanceElem.innerText = formatted;
+
+            const liveBalance = document.getElementById("liveBalance");
+            if (liveBalance) {
+                liveBalance.innerText = formatted;
+            }
+        }
+    </script>
+}

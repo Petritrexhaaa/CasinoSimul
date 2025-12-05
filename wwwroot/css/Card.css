@@ -1,0 +1,85 @@
+/* Refined High Card styles */
+h2 {
+    font-size: 2.5rem;
+    color: #ffd700;
+    text-shadow: 2px 2px #000;
+}
+
+p {
+    font-size: 1.1rem;
+    color: #ccc;
+}
+
+#betAmount {
+    background-color: #2e2a25;
+    border: 2px solid #ffd700;
+    color: #fff;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
+}
+
+    #betAmount::placeholder {
+        color: #bbb;
+    }
+
+.btn-primary {
+    background-color: #ffcc00;
+    border: none;
+    color: #422c00;
+    font-weight: bold;
+    box-shadow: 0 0 10px #ffcc00aa;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+    .btn-primary:hover {
+        background-color: #ffdb4d;
+        box-shadow: 0 0 15px #ffdb4d;
+    }
+
+#userBalance {
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: #ffec99;
+    text-shadow: 1px 1px #000;
+}
+
+/* Card layout enhancement */
+.card-display h5 {
+    color: #ffd700;
+    margin-bottom: 10px;
+}
+
+.playing-card {
+    background: radial-gradient(circle, #1e1a15 0%, #2e2a25 100%);
+    border-radius: 12px;
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.4);
+}
+
+.card-front, .card-back {
+    background: radial-gradient(circle at center, #fff 40%, #ddd 100%);
+    color: #000;
+    font-family: 'Georgia', serif;
+    font-size: 2rem;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+}
+
+.card-back {
+    background: linear-gradient(145deg, #2f2a25, #1c1b19);
+    color: #ffec99;
+    font-size: 2.5rem;
+    border: 2px dashed #ffec99;
+}
+
+#result h4 {
+    font-weight: bold;
+    text-shadow: 1px 1px #000;
+}
+
+#result p {
+    font-size: 1.1rem;
+    color: #eee;
+}
+
+/* Flip animation smoother */
+.flip .card-inner {
+    transition: transform 1s ease-in-out;
+}

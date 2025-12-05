@@ -1,0 +1,34 @@
+@model CasinoRoyale.ViewModels.RegisterVM
+
+<form asp-action="Register" method="post" class="p-4 rounded shadow bg-glass register-form" novalidate>
+    <div asp-validation-summary="All" class="text-danger small mb-3"></div>
+
+    <div class="text-center mb-3">
+        <!-- Logo image removed because it's missing -->
+        <h1 class="h4 mb-3 fw-bold">Create an account</h1>
+    </div>
+
+    <div class="form-floating mb-3">
+        <input type="text" asp-for="Username" class="form-control bg-glass" id="floatingUsername" placeholder="Username" required />
+        <label for="floatingUsername" class="bg-trans fw-bold">Username</label>
+        <span class="text-danger" asp-validation-for="Username"></span>
+    </div>
+
+    <div class="form-floating mb-3">
+        <input type="email" asp-for="Email" class="form-control bg-glass" id="floatingEmail" placeholder="email@example.com" required />
+        <label for="floatingEmail" class="bg-trans fw-bold">Email address</label>
+        <span class="text-danger" asp-validation-for="Email"></span>
+    </div>
+
+    <div class="form-floating mb-3">
+        <input type="password" asp-for="Password" class="form-control bg-glass" id="floatingPassword" placeholder="Password" required />
+        <label for="floatingPassword" class="bg-trans fw-bold">Password</label>
+        <span class="text-danger" asp-validation-for="Password"></span>
+    </div>
+
+    <input type="hidden" asp-for="Role" value="Player" />
+
+    <div class="d-grid">
+        <button type="submit" class="btn btn-primary btn-lg">Register</button>
+    </div>
+</form>

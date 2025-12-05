@@ -1,0 +1,154 @@
+@{
+    ViewData["Title"] = "High Card";
+}
+
+<div class="container text-center mt-5">
+    <h2 class="mb-4">🃏 High Card</h2>
+    <p>Place a bet and draw a card. Beat the dealer to win!</p>
+
+    <div class="mt-3">
+        <input type="number" class="form-control w-50 mx-auto" id="betAmount" placeholder="Enter bet amount" min="1" />
+        <button onclick="drawCard()" class="btn btn-primary mt-3">Draw Card</button>
+    </div>
+
+    
+
+    <div class="card-display row justify-content-center mt-5">
+        <div class="col-5">
+            <h5>Your Card</h5>
+            <div class="playing-card" id="playerCard">
+                <div class="card-inner">
+                    <div class="card-front"></div>
+                    <div class="card-back">?</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-5">
+            <h5>Dealer's Card</h5>
+            <div class="playing-card" id="dealerCard">
+                <div class="card-inner">
+                    <div class="card-front"></div>
+                    <div class="card-back">?</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="result" class="mt-4"></div>
+</div>
+
+<style>
+    .playing-card {
+        width: 100px;
+        height: 140px;
+        perspective: 1000px;
+        margin: 0 auto;
+    }
+
+    .card-inner {
+        width: 100%;
+        height: 100%;
+        transition: transform 0.8s;
+        transform-style: preserve-3d;
+        position: relative;
+    }
+
+    .card-front, .card-back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: bold;
+        border: 2px solid #333;
+    }
+
+    .card-front {
+        background-color: white;
+        color: black;
+        transform: rotateY(180deg);
+    }
+
+    .card-back {
+        background-color: #333;
+        color: white;
+    }
+
+    .flip .card-inner {
+        transform: rotateY(180deg);
+    }
+</style>
+
+@section Scripts {
+    <script>
+                        async function drawCard() {
+            const betAmount = parseFloat(document.getElementById("betAmount").value);
+            const resultDiv = document.getElementById("result");
+            if (isNaN(betAmount) || betAmount < 1) {
+                resultDiv.innerHTML = `<div class="text-danger">Please enter a valid bet amount.</div>`;
+                return;
+            }
+
+            // Reset cards
+            document.querySelectorAll(".playing-card").forEach(card => card.classList.remove("flip"));
+            document.querySelectorAll(".card-front").forEach(front => front.innerHTML = "");
+            document.querySelectorAll(".card-back").forEach(back => back.innerHTML = "?");
+            resultDiv.innerHTML = "";
+
+            const response = await fetch("/SlotGame/PlayHighCard", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ betAmount })
+            });
+
+            const data = await response.json();
+
+            if (data.playerCard !== undefined) {
+                setTimeout(() => {
+                    // Flip cards
+                    document.getElementById("playerCard").classList.add("flip");
+                    document.getElementById("dealerCard").classList.add("flip");
+
+                    // Fill card faces
+                    document.querySelector("#playerCard .card-front").innerHTML = cardHtml(data.playerCard);
+                    document.querySelector("#dealerCard .card-front").innerHTML = cardHtml(data.dealerCard);
+
+                    // Update both page and header balance
+                    const formatted = data.balance.toLocaleString('en-US', {
+                        style: 'currency',
+                        currency: 'USD',
+                        maximumFractionDigits: 2
+                    });
+                    document.querySelectorAll("#userBalance, #liveBalance").forEach(el => {
+                        el.innerText = formatted;
+                    });
+
+                    // Show result message
+                    let color = data.result === "win" ? "success" : data.result === "lose" ? "danger" : "warning";
+                    resultDiv.innerHTML = `
+                        <h4 class="text-${color} mt-4">You ${data.result}!</h4>
+                        <p>New Balance: <strong>${formatted}</strong></p>
+                    `;
+                }, 500); // slight delay for realism
+            } else {
+                resultDiv.innerHTML = `<div class="text-danger">Error: ${data}</div>`;
+            }
+        }
+
+
+
+
+
+        function cardHtml(cardStr) {
+            const suits = { '♠': '♠', '♥': '♥', '♦': '♦', '♣': '♣' };
+            const value = cardStr.slice(0, -1);
+            const suit = cardStr.slice(-1);
+            const color = (suit === '♥' || suit === '♦') ? 'red' : 'black';
+            return `<span style="color:${color};">${value}${suits[suit]}</span>`;
+        }
+    </script>
+}
