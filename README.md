@@ -1,5 +1,5 @@
 Hello professor, or anyone viewing. This will serve as instructions on how to run the project, and how to setup the database.
-First, clone the repository, or download it as a .zip, your choice. Open it with Visual Studio (the purple one, not the blue one. Also, the Visual Studio needs to have .net installed)
+First, clone the repository, or download it as a .zip, your choice. Open it with Visual Studio (the purple one, not the blue one. Also, the Visual Studio needs to have .net 9.0 installed, not lower.)
 Once you've opened the folder, double click on the .sln file. This will make a solution explorer appear. 
 
 Next, you need to also download the database, to make register/login work. I'll tell you how to do it:
